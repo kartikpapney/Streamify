@@ -1,0 +1,19 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+
+
+body {
+    background: #111111;
+}
+
+.card {
+    background: #242323;
+}
+
+.btn {
+    background: #ff0000;
+}
