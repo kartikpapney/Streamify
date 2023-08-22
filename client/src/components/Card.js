@@ -8,7 +8,7 @@ const Card = ({ props }) => {
         <img src={ImgLink} alt={text} className="card-img-top" />
         <div className="card-body">
           <h6 className="card-title text-light fw-normal">{title}</h6>
-          <Link to={`${process.env.REACT_APP_FE_HOST}/watch/${_id}`}>
+          <Link to={`${process.env.REACT_APP_BE_HOST}/watch/${_id}`}>
             <button
               rel="noreferrer"
               className="btn btn-sm btn-danger mt-2"
