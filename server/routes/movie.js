@@ -3,38 +3,57 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const Movie = require("../models/Movie");
+const Tag = require("../models/Tag");
 
-router.post("/all", async (req, res) => {
-    const { movies } = req.body;
+router.get("/tags", async (req, res) => {
     try {
-        const savedMovies = await Movie.insertMany(movies);
-        res.status(200).json(savedMovies);
-    } catch (err){
+        const data = await Tag.find({});
+        res.status(200).json({data});
+    } catch (err) {
         res.status(500).json(err);
     }
 });
 
 router.post("/", async (req, res) => {
-    const { ImgLink, text, title, pageLink } = req.body;
+    const { thumbnail, title, link, tags } = req.body;
     try {
-        const savedMovie = await Movie.create({ ImgLink: ImgLink, text: text, title: title, pageLink: pageLink });
+        const operations = tags.map((tag) => ({
+            updateOne: {
+                filter: { tag },  // Find a tag with the same name
+                update: { $setOnInsert: { tag } },  // Only set on insert, no update if tag exists
+                upsert: true  // If the tag doesn't exist, insert it
+            }
+        }));
+    
+        await Tag.bulkWrite(operations);
+        const tagsId = (await Tag.find({ tag: { $in: tags } }, { _id: 1 })).map(({ _id }) => _id);
+
+        const savedMovie = await Movie.create({ thumbnail, title, link, tags: tagsId });
+
         res.status(200).json(savedMovie);
-    } catch (err){
+    } catch (err) {
         res.status(500).json(err);
     }
 });
 
+
 router.get("/", async (req, res) => {
     try {
-        const title = req.query.title || ""
-        const page = req.query.page || 1;
+        const { tag, title, page=1 } = req.query;
+
         const PER_PAGE = 8;
-        const allData = await Movie.find({
-            title: { $regex: title, $options: 'i' } // Case-insensitive substring search
-        })
-        .skip((page-1)*PER_PAGE)
-        .limit(PER_PAGE);; //can also use ({})
-        res.status(200).json(allData);
+
+        const query = {}
+        if(title) query["title"] = { $regex: title, $options: 'i' };
+        if(tag) query["tags"] = tag
+        const [
+            data,
+            count
+        ] = await Promise.all([
+            Movie.find(query).populate("tags").skip((page-1)*PER_PAGE).limit(PER_PAGE),
+            Movie.find(query).countDocuments()
+        ]);
+        res.status(200).json({data, count});
     } catch (err) {
         res.status(500).json(err);
     }
@@ -42,11 +61,11 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try {
-        const Data = await Movie.findById(req.params.id);
-        if (Data) {
-            res.status(200).json(Data);
+        const data = await Movie.findById(req.params.id).populate("tags");
+        if (data) {
+            res.status(200).json({data});
         } else {
-        res.status(404).json({ message: 'Movie not found' });
+            res.status(404).json({ message: 'Movie not found' });
         }
     } catch (error) {
         res.status(500).json({ message: 'An error occurred' });
@@ -55,23 +74,20 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
     const movieId = req.params.id;
-    const { ImgLink, text, title, pageLink } = req.body;
+    const { thumbnail, title, link, tags } = req.body;
     try {
         const updatedMovie = await Movie.findByIdAndUpdate(
             movieId,
             {
-                ImgLink,
-                text,
-                title,
-                pageLink,
+                thumbnail, title, link, tags
             },
-            { new: true } // Return the updated document
+            { new: true }
         );
 
         if (updatedMovie) {
-        res.json(updatedMovie);
+            res.json(updatedMovie);
         } else {
-        res.status(404).json({ message: 'Movie not found' });
+            res.status(404).json({ message: 'Movie not found' });
         }
     } catch (error) {
         res.status(500).json({ message: 'An error occurred' });
