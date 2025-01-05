@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+
 const Card = ({ props }) => {
   const { text, title, thumbnail, _id, link } = props
   return (

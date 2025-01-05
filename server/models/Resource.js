@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const MovieSchema = mongoose.Schema({
+const ResourceSchema = mongoose.Schema({
     platform: {
         type: String, required: true
     },
@@ -19,4 +19,4 @@ const MovieSchema = mongoose.Schema({
     ]
 });
 
-module.exports = mongoose.model('Movie', MovieSchema);
+module.exports = mongoose.model('Resource', ResourceSchema);

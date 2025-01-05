@@ -1,7 +1,7 @@
 const { CronJob } = require('cron');
 const { google } = require('googleapis');
 
-const Movie = require("./models/Movie");
+const Resource = require("./models/Resource");
 const Tag = require("./models/Tag");
 
 const Item = require('./Item');
@@ -32,7 +32,7 @@ async function upsertDB([platform, link, title, thumbnail, tagString = ""]) {
         await Tag.bulkWrite(operations);
         const tagsId = (await Tag.find({ tag: { $in: tags } }, { _id: 1 })).map(({ _id }) => _id);
 
-        await Movie.updateOne({link}, { $set: {thumbnail, title, link, tags: tagsId, platform} }, {upsert: true});
+        await Resource.updateOne({link}, { $set: {thumbnail, title, link, tags: tagsId, platform} }, {upsert: true});
         console.log("updated in database")
     } catch (err) {
         console.log("error", err);

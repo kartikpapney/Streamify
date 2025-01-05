@@ -1,5 +1,5 @@
 import Search from "./components/Search";
-import MovieContainer from "./components/MovieContainer";
+import Container from "./components/Container";
 import Finish from "./components/Finish";
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 
@@ -21,7 +21,7 @@ const appRouter = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <MovieContainer />,
+        element: <Container />,
       }
     ],
   },

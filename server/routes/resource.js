@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const router = express.Router();
-const Movie = require("../models/Movie");
+const Resource = require("../models/Resource");
 const Tag = require("../models/Tag");
 
 router.get("/tags", async (req, res) => {
@@ -27,8 +27,8 @@ router.get("/", async (req, res) => {
             data,
             count
         ] = await Promise.all([
-            Movie.find(query).populate("tags").skip((page-1)*PER_PAGE).limit(PER_PAGE),
-            Movie.find(query).countDocuments()
+            Resource.find(query).populate("tags").skip((page-1)*PER_PAGE).limit(PER_PAGE),
+            Resource.find(query).countDocuments()
         ]);
         res.status(200).json({data, count});
     } catch (err) {
@@ -38,11 +38,11 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try {
-        const data = await Movie.findById(req.params.id).populate("tags");
+        const data = await Resource.findById(req.params.id).populate("tags");
         if (data) {
             res.status(200).json({data});
         } else {
-            res.status(404).json({ message: 'Movie not found' });
+            res.status(404).json({ message: 'Resource not found' });
         }
     } catch (error) {
         res.status(500).json({ message: 'An error occurred' });
@@ -53,7 +53,7 @@ router.put("/:id", async (req, res) => {
     const movieId = req.params.id;
     const { thumbnail, title, link, tags } = req.body;
     try {
-        const updatedMovie = await Movie.findByIdAndUpdate(
+        const updatedMovie = await Resource.findByIdAndUpdate(
             movieId,
             {
                 thumbnail, title, link, tags
@@ -64,7 +64,7 @@ router.put("/:id", async (req, res) => {
         if (updatedMovie) {
             res.json(updatedMovie);
         } else {
-            res.status(404).json({ message: 'Movie not found' });
+            res.status(404).json({ message: 'Resource not found' });
         }
     } catch (error) {
         res.status(500).json({ message: 'An error occurred' });
@@ -74,11 +74,11 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     const movieId = req.params.id;
     try {
-        const deletedMovie = await Movie.findByIdAndRemove(movieId);
+        const deletedMovie = await Resource.findByIdAndRemove(movieId);
         if (deletedMovie) {
-            res.status(200).json({ message: 'Movie deleted successfully' });
+            res.status(200).json({ message: 'Resource deleted successfully' });
         } else {
-            res.status(404).json({ message: 'Movie not found' });
+            res.status(404).json({ message: 'Resource not found' });
         }
     } catch (err) {
         res.status(500).json({ message: 'An error occured' });
@@ -89,11 +89,11 @@ router.delete("/", async (req, res) => {
     
     try {
         const deletedTags = await Tag.deleteMany({});
-        const deletedMovie = await Movie.deleteMany({});
-        if (deletedMovie) {
-            res.status(200).json({ message: 'Movies deleted successfully' });
+        const deletedMovie = await Resource.deleteMany({});
+        if (deletedTags && deletedMovie) {
+            res.status(200).json({ message: 'Resources deleted successfully' });
         } else {
-            res.status(404).json({ message: 'Movies not found' });
+            res.status(404).json({ message: 'Resources not found' });
         }
     } catch (err) {
         res.status(500).json({ message: 'An error occured' });

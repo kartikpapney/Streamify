@@ -1,16 +1,17 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import {fetchData} from '../utils'
-import { addMoreMovie, setLoading } from '../store/movieSlice';
+import { addMoreResource, setLoading } from '../store/resourceSlice';
 import { useEffect } from 'react';
 import Card from './Card';
-function MovieContainer() {
-    const movies = useSelector((store) => store.movie.movies);
-    const isLoading = useSelector((store) => store.movie.isLoading);
-    const isFinished = useSelector((store) => store.movie.isFinished);
-    const page = useSelector((store) => store.movie.page);
-    const search = useSelector((store) => store.movie.search);
-    const tag = useSelector((store) => store.movie.tag);
+
+function ResourceContainer() {
+    const resources = useSelector((store) => store.resource.resources);
+    const isLoading = useSelector((store) => store.resource.isLoading);
+    const isFinished = useSelector((store) => store.resource.isFinished);
+    const page = useSelector((store) => store.resource.page);
+    const search = useSelector((store) => store.resource.search);
+    const tag = useSelector((store) => store.resource.tag);
     
     const dispatch = useDispatch();
     const handleScroll = function () {
@@ -18,8 +19,8 @@ function MovieContainer() {
         if (isNearBottom && !isLoading && !isFinished) {
             dispatch(setLoading(true))
             fetchData(page, search, tag).then((response) => {
-                dispatch(addMoreMovie({
-                    movies: response.data
+                dispatch(addMoreResource({
+                    resources: response.data
                 }));
             });
         }
@@ -34,8 +35,8 @@ function MovieContainer() {
 
         <>
             <div className="row mt-4">
-                {movies.map((movie, idx) => (
-                    <Card key={movie._id} props={movie} />
+                {resources.map((resource, idx) => (
+                    <Card key={resource._id} props={resource} />
                 ))}
             </div>
             {
@@ -52,4 +53,4 @@ function MovieContainer() {
     )
 }
 
-export default MovieContainer
+export default ResourceContainer

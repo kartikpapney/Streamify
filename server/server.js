@@ -6,7 +6,7 @@ const { rateLimit } = require('express-rate-limit')
 const cors = require("cors");
 const { job } = require("./cron");
 const { connect } = require("./db")
-const movieRoutes = require("./routes/movie");
+const movieRoutes = require("./routes/resource");
 
 const authorizeMiddleware = async(req, res, next) => {
     if(req.method === "GET") {
@@ -32,10 +32,11 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(limiter)
 
-app.use("/api/movies/", authorizeMiddleware, movieRoutes);
+app.use("/api/v1/", authorizeMiddleware, movieRoutes);
 app.use("/", (req, res) => {
     res.status(400).json({message: "Bad Request"});
 })
+
 connect().then(() => {
     app.listen(port, (req, res) => {
         job.start();

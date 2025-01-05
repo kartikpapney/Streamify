@@ -1,8 +1,9 @@
 import {configureStore} from '@reduxjs/toolkit'
-import movieReducer from './movieSlice';
+import resourceReducer from './resourceSlice';
+
 const appStore = configureStore({
     reducer: {
-        movie: movieReducer
+        resource: resourceReducer
     }
 })
 export default appStore;

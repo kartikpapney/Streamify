@@ -1,13 +1,14 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { addSearch, setLoading, setSearch, addTags, setTag } from '../store/movieSlice';
+import { addSearch, setLoading, setSearch, addTags, setTag } from '../store/resourceSlice';
 import { useEffect } from 'react';
 import { fetchData, fetchTags } from '../utils';
+
 function Search() {
-    const search = useSelector((store) => store.movie.search);
-    const page = useSelector((store) => store.movie.page);
-    const tags = useSelector((store) => store.movie.tags);
-    const tag = useSelector((store) => store.movie.tag);
+    const search = useSelector((store) => store.resource.search);
+    const page = useSelector((store) => store.resource.page);
+    const tags = useSelector((store) => store.resource.tags);
+    const tag = useSelector((store) => store.resource.tag);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -23,7 +24,7 @@ function Search() {
             dispatch(setLoading(true))
             const response = await fetchData(page, search, tag)
             dispatch(addSearch({
-                movies: response.data,
+                resources: response.data,
             }));
         }, 1000)
         
