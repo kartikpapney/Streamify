@@ -2,7 +2,6 @@ import Search from "./components/Search";
 import MovieContainer from "./components/MovieContainer";
 import Finish from "./components/Finish";
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
-import WatchContainer from "./components/WatchContainer";
 
 const App = () => {
   
@@ -23,10 +22,6 @@ const appRouter = createBrowserRouter([
       {
         path: "/",
         element: <MovieContainer />,
-      },
-      {
-        path: "/watch/:id",
-        element: <WatchContainer />,
       }
     ],
   },

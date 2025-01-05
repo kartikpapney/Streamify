@@ -14,36 +14,13 @@ router.get("/tags", async (req, res) => {
     }
 });
 
-router.post("/", async (req, res) => {
-    const { thumbnail, title, link, tags } = req.body;
-    try {
-        const operations = tags.map((tag) => ({
-            updateOne: {
-                filter: { tag },  // Find a tag with the same name
-                update: { $setOnInsert: { tag } },  // Only set on insert, no update if tag exists
-                upsert: true  // If the tag doesn't exist, insert it
-            }
-        }));
-    
-        await Tag.bulkWrite(operations);
-        const tagsId = (await Tag.find({ tag: { $in: tags } }, { _id: 1 })).map(({ _id }) => _id);
-
-        const savedMovie = await Movie.create({ thumbnail, title, link, tags: tagsId });
-
-        res.status(200).json(savedMovie);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
-
-
 router.get("/", async (req, res) => {
     try {
         const { tag, title, page=1 } = req.query;
 
         const PER_PAGE = 8;
 
-        const query = {}
+        const query = { platform: { $ne: "Deleted" } }
         if(title) query["title"] = { $regex: title, $options: 'i' };
         if(tag) query["tags"] = tag
         const [
@@ -111,6 +88,7 @@ router.delete("/:id", async (req, res) => {
 router.delete("/", async (req, res) => {
     
     try {
+        const deletedTags = await Tag.deleteMany({});
         const deletedMovie = await Movie.deleteMany({});
         if (deletedMovie) {
             res.status(200).json({ message: 'Movies deleted successfully' });

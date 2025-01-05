@@ -6,7 +6,7 @@ const movieSlice = createSlice({
         tags: [],
         movies: [],
         page: 1,
-        isLoading: false,
+        isLoading: true,
         isFinished: false,
         search: null,
         tag: null,

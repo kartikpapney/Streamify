@@ -2,10 +2,12 @@ require("dotenv").config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const {rateLimit} = require('express-rate-limit')
+const { rateLimit } = require('express-rate-limit')
 const cors = require("cors");
+const { job } = require("./cron");
 const { connect } = require("./db")
 const movieRoutes = require("./routes/movie");
+
 const authorizeMiddleware = async(req, res, next) => {
     if(req.method === "GET") {
         next();
@@ -36,6 +38,7 @@ app.use("/", (req, res) => {
 })
 connect().then(() => {
     app.listen(port, (req, res) => {
+        job.start();
         console.log(`Server connected to port ${port}`);
     })  
 });

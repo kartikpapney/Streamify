@@ -12,7 +12,6 @@ module.exports = {
         db.on('error', console.error.bind(console, 'mongodb connection error'));
         db.once('open', () => {
             console.info('mongodb connected');
-        });
-        // db.on('close', console.info("mongodb disconnected"))       
+        });   
     }
 }
