@@ -44,7 +44,8 @@ function Search() {
                     value={search} />
             </div>
             {
-                <div>
+                <div className='flex w-full overflow-x-auto no-scrollbar'>
+                    <div className='flex flex-grow justify-center items-center space-x-2'>
                     {
                         tags.map((currentTag) => {
                             
@@ -52,7 +53,7 @@ function Search() {
                                 return <button
                                     rel="noreferrer"
                                     key={currentTag?._id}
-                                    className="btn btn-sm text-red-600 mt-2 bg-white mr-2 line-through"
+                                    className="btn btn-sm text-red-600 mt-2 bg-white mr-2 line-through min-w-[80px]"
                                     onClick={() => {
                                         dispatch(setTag(currentTag?._id))
                                     }}>{currentTag.tag}
@@ -61,7 +62,7 @@ function Search() {
                                 return <button
                                     rel="noreferrer"
                                     key={currentTag?._id}
-                                    className="btn btn-sm text-red-600 mt-2 bg-white mr-2"
+                                    className="btn btn-sm text-red-600 mt-2 bg-white mr-2 min-w-[80px]"
                                     onClick={() => {
                                         dispatch(setTag(currentTag?._id === tag ? null : currentTag?._id))
                                     }}>{currentTag.tag}
@@ -70,6 +71,7 @@ function Search() {
                             
                         })
                     }
+                    </div>
                 </div>
             }
         </div>

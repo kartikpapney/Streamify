@@ -7,7 +7,7 @@ const Tag = require("../models/Tag");
 
 router.get("/tags", async (req, res) => {
     try {
-        const data = await Tag.find({});
+        const data = await Tag.find({}).sort({accessed_at: -1});
         res.status(200).json({data});
     } catch (err) {
         res.status(500).json(err);
@@ -22,7 +22,10 @@ router.get("/", async (req, res) => {
 
         const query = { platform: { $ne: "Deleted" } }
         if(title) query["title"] = { $regex: title, $options: 'i' };
-        if(tag) query["tags"] = tag
+        if(tag) {
+            await Tag.updateOne({_id: tag}, {$set: {accessed_at: new Date()}});
+            query["tags"] = tag;
+        }
         const [
             data,
             count
