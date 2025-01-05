@@ -86,7 +86,7 @@ async function updateSheet(data) {
 
 
 const job = new CronJob(
-	'*/10 * * * * *',
+	'* 1 * * *',
 	async function () {
 		const data = await getSheet()
         await updateSheet(data)
