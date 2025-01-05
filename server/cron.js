@@ -55,10 +55,10 @@ async function getSheet() {
 async function updateSheet(data) {
     try {
 
-        data.forEach(async ([platform,link,,, tags = []], idx) => {
+        data.forEach(async ([platform,link,title,thumbnail, tags = []], idx) => {
             const sheetInstance = await google.sheets({ version: 'v4', auth: googleAuth });
             
-            const item = await Item.getItem(link, tags.split(", "), platform);
+            const item = await Item.getItem(platform, link, title, thumbnail, tags.split(", "));
             const updateToGsheet = [
                 item.getDetailsArray()  
             ];

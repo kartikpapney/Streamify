@@ -10,37 +10,37 @@ class Item {
         this.tags = tags;
     }
 
-    static async getItem(link = "", tags = [], platform) {
+    static async getItem(platform, link, title, thumbnail, tags) {
         if(link.includes("medium")) {
-            return await this.getMediumVideoItem(link, tags, platform);
+            return await this.getMediumVideoItem(platform, link, title, thumbnail, tags);
         } else if(link.includes("youtube")) {
-            return await this.getYoutubeVideoItem(link, tags, platform)
+            return await this.getYoutubeVideoItem(platform, link, title, thumbnail, tags)
         } else {
             return new Item(
                 platform,
                 link,
-                "Unknown",
-                "",
+                title || "Unknown",
+                thumbnail || "",
                 tags.join(", "),
             )
         }   
 
     }
 
-    static async getYoutubeVideoItem(link = "", tags = [], platform) {
+    static async getYoutubeVideoItem(platform, link, title, thumbnail, tags) {
         const videoId = link.split('v=')[1]?.split('&')[0];
         if (!videoId) {
             console.log('Invalid YouTube video link.');
             return;
         }
     
-        const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        thumbnail = thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     
         try {
     
             const response = await axios.get(link);
             const $ = cheerio.load(response.data);
-            const title = $("meta[name='title']").attr("content");
+            title = title || $("meta[name='title']").attr("content");
     
             return new Item(
                 platform,
@@ -54,13 +54,13 @@ class Item {
         }
     }
 
-    static async getMediumVideoItem(link = "", tags = [], platform) {
+    static async getMediumVideoItem(platform, link, title, thumbnail, tags) {
         try {
             const { data } = await axios.get(link);
             
             const $ = cheerio.load(data);
-            const title = $('meta[property="og:title"]').attr('content') || $('title').text();
-            const thumbnail = $('meta[property="og:image"]').attr('content');
+            title = title || $('meta[property="og:title"]').attr('content') || $('title').text();
+            thumbnail = thumbnail || $('meta[property="og:image"]').attr('content');
     
             return new Item(
                 platform,
