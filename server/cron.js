@@ -6,15 +6,16 @@ const Tag = require("./models/Tag");
 
 const Item = require('./Item');
 
-const clientEmail = process.env.CLIENT_EMAIL;
-const privateKey = process.env.SHEET_PRIVATE_KEY;
-const googleSheetId = process.env.SHEET_SPREADSHEET_ID;
-const googleSheetPage = process.env.SHEET_PAGE;
+const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
+const SHEET_PRIVATE_KEY = process.env.SHEET_PRIVATE_KEY;
+const SHEET_SPREADSHEET_ID = process.env.SHEET_SPREADSHEET_ID;
+const SHEET_PAGE = process.env.SHEET_PAGE;
+const CRON_TIMING = process.env.CRON_TIMING ?? '0 * * * * *';
 
 const googleAuth = new google.auth.JWT(
-    clientEmail,
+    CLIENT_EMAIL,
     null,
-    privateKey.replace(/\\n/g, '\n'),
+    SHEET_PRIVATE_KEY.replace(/\\n/g, '\n'),
     'https://www.googleapis.com/auth/spreadsheets'
 );
 
@@ -33,9 +34,9 @@ async function upsertDB([platform, link, title, thumbnail, tagString = ""]) {
         const tagsId = (await Tag.find({ tag: { $in: tags } }, { _id: 1 })).map(({ _id }) => _id);
 
         await Resource.updateOne({link}, { $set: {thumbnail, title, link, tags: tagsId, platform} }, {upsert: true});
-        console.log("updated in database")
+        console.log(`updated ${title} in database`)
     } catch (err) {
-        console.log("error", err);
+        console.log(`error while updating ${title}information in db`, err);
     }
 }
 
@@ -45,55 +46,55 @@ async function getSheet() {
 
     const infoObjectFromSheet = await sheetInstance.spreadsheets.values.get({
         auth: googleAuth,
-        spreadsheetId: googleSheetId,
-        range: `${googleSheetPage}!A2:E`
+        spreadsheetId: SHEET_SPREADSHEET_ID,
+        range: `${SHEET_PAGE}!A2:E`
     });
     
     return infoObjectFromSheet.data.values;
     
 }
-async function updateSheet(data) {
+async function updateInformation(data) {
     try {
 
         data.forEach(async ([platform,link,title,thumbnail, tags = []], idx) => {
-            const sheetInstance = await google.sheets({ version: 'v4', auth: googleAuth });
+            try {
+                const sheetInstance = await google.sheets({ version: 'v4', auth: googleAuth });
             
-            const item = await Item.getItem(platform, link, title, thumbnail, tags.split(", "));
-            const updateToGsheet = [
-                item.getDetailsArray()  
-            ];
+                const item = await Item.getItem(platform, link, title, thumbnail, tags.split(", "));
+                const updateToGsheet = [
+                    item.getDetailsArray()  
+                ];
 
-            const rowIndex = idx + 2; 
-            const range = `${googleSheetPage}!A${rowIndex}:E${rowIndex}`; 
+                const rowIndex = idx + 2; 
+                const range = `${SHEET_PAGE}!A${rowIndex}:E${rowIndex}`; 
 
-            await sheetInstance.spreadsheets.values.update({
-                auth: googleAuth,
-                spreadsheetId: googleSheetId,
-                range: range,  
-                valueInputOption: 'RAW',
-                resource: {
-                    values: updateToGsheet,
-                },
-            });
-
-            console.log(`Updated row ${rowIndex}`);
+                await sheetInstance.spreadsheets.values.update({
+                    auth: googleAuth,
+                    spreadsheetId: SHEET_SPREADSHEET_ID,
+                    range: range,  
+                    valueInputOption: 'RAW',
+                    resource: {
+                        values: updateToGsheet,
+                    },
+                });
+                await upsertDB([item.platform, item.link, item.title, item.thumbnail, item.tags])
+                console.log(`updated ${item.title} in sheets`);
+            } catch (err) {
+                console.log(`error while updating ${title}`, err);
+            }
         })
 
     } catch (err) {
-        console.log("updateSheet function error", err);
+        console.log("error while updating information in sheets", err);
     }
 }
 
 
 const job = new CronJob(
-	'0 * * * *',
+	CRON_TIMING,
 	async function () {
 		const data = await getSheet()
-        await updateSheet(data)
-        const mdata = await getSheet();
-        mdata.map(async(data) => {
-            await upsertDB(data)
-        })
+        await updateInformation(data)
 	},
 	null, 
 	false
