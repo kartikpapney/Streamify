@@ -28,30 +28,64 @@ class Item {
     }
 
     static async getYoutubeVideoItem(platform, link, title, thumbnail, tags) {
-        const videoId = link.split('v=')[1]?.split('&')[0];
-        if (!videoId) {
-            console.log('Invalid YouTube video link.');
-            return;
-        }
-    
-        thumbnail = thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    
-        try {
-    
-            const response = await axios.get(link);
-            const $ = cheerio.load(response.data);
-            title = title || $("meta[name='title']").attr("content");
-    
-            return new Item(
-                platform,
-                link,
-                title,
-                thumbnail,
-                tags.join(", "),
-            )
-        } catch (error) {
-            console.error('Error fetching video details:', error);
-        }
+
+        return new Promise((resolve, reject) => {
+            const videoId = link.split('v=')[1]?.split('&')[0];
+            if (!videoId) {
+                console.log('Invalid YouTube video link.');
+                return;
+            }
+        
+            thumbnail = thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        
+            try {
+                if(!title) {
+                    const https = require('https');
+                    const querystring = require('querystring');
+                    const videoID = videoId;
+                    
+                    const params = {
+                        format: 'json',
+                        url: `https://www.youtube.com/watch?v=${videoID}`
+                    };
+                    
+                    const url = `https://www.youtube.com/oembed?${querystring.stringify(params)}`;
+                    
+                    https.get(url, (response) => {
+                        let data = '';
+                        response.on('data', (chunk) => {
+                            data += chunk;
+                        });
+                    
+                        response.on('end', () => {
+                            const parsedData = JSON.parse(data);
+                            resolve(new Item(
+                                platform,
+                                link,
+                                parsedData.title,
+                                thumbnail,
+                                tags.join(", "),
+                            ))
+                        });
+                    
+                    }).on('error', (error) => {
+                        console.error('Error:', error);
+                    }); 
+                } else {
+                    resolve(new Item(
+                        platform,
+                        link,
+                        title,
+                        thumbnail,
+                        tags.join(", "),
+                    ))
+                }
+            } catch (error) {
+                console.error('Error fetching video details:', error);
+                reject(error);
+            }
+        })
+        
     }
 
     static async getMediumVideoItem(platform, link, title, thumbnail, tags) {
