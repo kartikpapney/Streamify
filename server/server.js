@@ -3,7 +3,6 @@ require("dotenv").config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const { rateLimit } = require('express-rate-limit')
-const cors = require("cors");
 const { job } = require("./cron");
 const { connect } = require("./db")
 const movieRoutes = require("./routes/resource");
@@ -29,7 +28,6 @@ const port = process.env.PORT || 3001;
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
 app.use(limiter)
 
 app.use("/api/v1/", authorizeMiddleware, movieRoutes);
